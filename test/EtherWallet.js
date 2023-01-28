@@ -7,7 +7,7 @@ describe('EtherWallet', function() {
 
     async function deployFixture() {
         //gets first two accounts from signers list
-        const [owner, otherAccount] = await ethers.getSigners
+        const [owner, otherAccount] = await ethers.getSigners()
 
         const EtherWallet = await ethers.getContractFactory('EtherWallet')
         const etherWallet = await EtherWallet.deploy()
@@ -22,7 +22,7 @@ describe('EtherWallet', function() {
             const { etherWallet, owner } = await loadFixture(deployFixture)
             
             //ensures the etherWallet contract owner matches our owner param (1st signer)
-            expect(await etherWallet.owner()).to.equal(owner);
+            expect(await etherWallet.owner()).to.equal(owner.address);
         })
     })
     describe('Deposit', function() {
