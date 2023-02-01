@@ -3,15 +3,15 @@
 import { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 import Button from 'react-bootstrap/Button'
+import Form from 'react-bootstrap/Form'
 
 //Imports EtherWallet.sol ABI (Application-Binary Interface)
 import EtherWallet from "./artifacts/contracts/EtherWallet.sol/EtherWallet.json"
 import './App.css';
 
 function App() {
-
-  const etherWalletAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
-
+  console.log("Ethers: ", ethers);
+  const contractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
 
   //State for MetaMask Account
   const [account, setAccount] = useState('')
@@ -31,7 +31,7 @@ function App() {
         const provider = new ethers.providers.Web3Provider(window.ethereum);
         const contract = new ethers.Contract(
           contractAddress,
-          EtherWaller.abi,
+          EtherWallet.abi,
           provider
         )
         let balance = await contract.balanceOf()
@@ -70,7 +70,8 @@ function App() {
     }
   }
 
-  const disconnectFromMetamask = async => {
+  //Disconnect from MetaMask Wallet
+  const disconnectFromMetamask = async() => {
     console.log("Disconnecting wallet from MetaMask...")
     try {
       setAccount('') //removes our account from the account state
@@ -79,6 +80,20 @@ function App() {
     } catch (err) {
       console.log("disconnectFromMetamask() exited with error: ", err)
     }
+  }
+
+  //Deposit Eth to EtherWallet Smart Contract
+  const depositToEtherWalletContract = async() => {
+    const provider = new ethers.providers.Web3Provider(window.ethereum)
+    const signer = provider.getSigner(account)
+    const contract = new ethers.Contract(
+      contractAddress,
+      EtherWallet.abi,
+      signer  //MetaMask Account
+    )
+    const transaction = await contract.deposit({
+      value: ethers.utils.parseEther(ethToUseForDepost)
+    })
   }
 
   return (
@@ -99,7 +114,22 @@ function App() {
               <img src="images/hand.svg" alt="disconnect" width="50" height="50" />
             </Button>
             <div className='mt-2 mb-2'>Connected Account: {account}</div>
-            <div className='mt-2 mb-2'>Balance: {balance}</div>
+            <div className='mt-2 mb-2'>MetaMask Balance: {balance}</div>
+            <Form>
+              <Form.Group className="mb-3" controlId="numberInEth">
+                <Form.Control
+                  type="text"
+                  placeholder="Enter the amount in ETH"
+                  onChange={(e) => setEthToUseForDeposit(e.target.value)}
+                />
+              <Button variant="primary" onClick={depositToEtherWalletContract}>
+                Deposit to EtherWallet Smart Contract
+              </Button>
+              </Form.Group>
+            </Form>
+            <div className='mt-2 mb-2'>Smart Contract Address: {contractAddress}</div>
+            <div className='mt-2 mb-2'>Smart Contract Balance: {scBalance}</div>
+
           </>
         )}
       </header>
