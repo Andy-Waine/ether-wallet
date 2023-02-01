@@ -1,6 +1,5 @@
 //allows use of React state in funciton components
 import { useState } from 'react';
-
 import { ethers } from 'ethers';
 import Button from 'react-bootstrap/Button'
 import './App.css';
@@ -42,6 +41,7 @@ function App() {
       <header className="App-header">
         <Button variant="secondary" onClick={connectToMetamask} disabled={shouldDisable}>
           <img src="images/metamask.svg" alt="metamask" width="50" height ="50" />
+          <span class="left-padding-sm">Connect</span>
         </Button>
         <div className='mt-2 mb-2'>Connected Account:</div>
         <Button variant="danger">
