@@ -26,9 +26,49 @@ describe('EtherWallet', function() {
         })
     })
     describe('Deposit', function() {
+        it("Should desposit Ether to the Smart Contract", async function() {
+            const { etherWallet } = await loadFixture(deployFixture)
 
+            const tx = await etherWallet.deposit({
+                value: ethers.utils.parseEther('1')
+            })
+            await tx.wait()
+
+            const balance = await ethers.provider.getBalance(etherWallet.address)
+            expect(balance.toString()).to.equal(ethers.utils.parseEther('1'))
+        })
     })
     describe('Withdrawal', function() {
+        it("Should withdraw Ether from the Smart Contract with 0 ETH", async function() {
+            const { etherWallet } = await loadFixture(deployFixture)
 
-    })
+            const tx = await etherWallet.connect(owner).withdraw(owner.address, ethers.utils.parseEther('0'))
+            await tx.wait()
+
+            const balance = await ethers.provider.getBalance(etherWallet.address)
+            expect(balance.toString()).to.equal(etehrs.utils.parseEther('0'))
+        })
+
+        it("Should withdraw Ether from the Smart Contract with <<positive integer> ETH", async function() {
+            const { etherWallet, owner } = await loadFixture(deployFixture)
+
+            //deposit ETH for future withdrawal
+            const depositTx = await etherWallet.deposit({
+                value: ethers.utils.parseEther('1')
+            })
+            await depositTx.wait()
+
+            let balance = await ethers.provider.getBalance(etherWallet.address)
+            expect(balance.toString()).to.equal(etehrs.utils.parseEther('0'))
+
+            //withdraw ETH
+            const withdrawTx = await etherWallet.withdraw(
+                owner.address,
+                ethers.utils.parseEther('1')
+            )
+            await withdrawTx.wait()
+            
+            balance = await ethers.provider.getBalance(etherWallet.address)
+            expect(balance.toString()).to.equal(ethers.utils.parseEther('0'))
+        })
 })

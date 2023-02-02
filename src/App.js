@@ -84,16 +84,28 @@ function App() {
 
   //Deposit Eth to EtherWallet Smart Contract
   const depositToEtherWalletContract = async() => {
-    const provider = new ethers.providers.Web3Provider(window.ethereum)
-    const signer = provider.getSigner(account)
-    const contract = new ethers.Contract(
-      contractAddress,
-      EtherWallet.abi,
-      signer  //MetaMask Account
-    )
-    const transaction = await contract.deposit({
-      value: ethers.utils.parseEther(ethToUseForDepost)
-    })
+    try {
+      const provider = new ethers.providers.Web3Provider(window.ethereum)
+      const signer = provider.getSigner(account)
+      const contract = new ethers.Contract(
+        contractAddress,
+        EtherWallet.abi,
+        signer  //MetaMask Account
+      )
+      const transaction = await contract.deposit({
+        value: ethers.utils.parseEther(ethToUseForDepost) //parses eth into wei
+      })
+      await transaction.wait()
+      let balance = await signer.getBalance()
+      balance = ethers.utils.formatEther(balance)
+      setBalance(balance)
+
+      let scBalance = await contract.balanceOf()
+      scBalance = ethers.utils.formatEther(scBalance)
+      setSCBalance(scBalance)
+    } catch (err) {
+      console.log("depositToEtherWalletContract() exited with error: ", err)
+    }
   }
 
   return (
@@ -119,11 +131,11 @@ function App() {
               <Form.Group className="mb-3" controlId="numberInEth">
                 <Form.Control
                   type="text"
-                  placeholder="Enter the amount in ETH"
+                  placeholder="Deposit Amount (ETH)"
                   onChange={(e) => setEthToUseForDeposit(e.target.value)}
                 />
               <Button variant="primary" onClick={depositToEtherWalletContract}>
-                Deposit to EtherWallet Smart Contract
+                Deposit
               </Button>
               </Form.Group>
             </Form>
