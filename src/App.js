@@ -22,7 +22,9 @@ function App() {
 
   //State for EtherWallet.sol Smart Contract
   const [scBalance, setSCBalance] = useState(0);
-  const [ethToUseForDepost, setEthToUseForDeposit] = useState(0)
+  const [ethToUseForDeposit, setEthToUseForDeposit] = useState(0)
+  const [ethToUseForWithdrawal, setEthToUseForWithdrawal] = useState(0)
+  const [addressToUseForWithdrawal, setAddressToUseForWithdrawal] = useState(ethers.constants.AddressZero)
 
   useEffect(() => {
     //obtain balance of smart contract
@@ -93,7 +95,7 @@ function App() {
         signer  //MetaMask Account
       )
       const transaction = await contract.deposit({
-        value: ethers.utils.parseEther(ethToUseForDepost) //parses eth into wei
+        value: ethers.utils.parseEther(ethToUseForDeposit) //parses eth into wei
       })
       await transaction.wait()
       let balance = await signer.getBalance()
@@ -103,6 +105,34 @@ function App() {
       let scBalance = await contract.balanceOf()
       scBalance = ethers.utils.formatEther(scBalance)
       setSCBalance(scBalance)
+    } catch (err) {
+      console.log("depositToEtherWalletContract() exited with error: ", err)
+    }
+  }
+
+  //Withdraw Eth to EtherWallet Smart Contract
+  const withdrawFromEtherWalletContract = async() => {
+    try {
+      const provider = new ethers.providers.Web3Provider(window.ethereum)
+      const signer = provider.getSigner(account)
+      const contract = new ethers.Contract(
+        contractAddress,
+        EtherWallet.abi,
+        signer  //MetaMask Account
+      )
+      const transaction = await contract.withdraw({
+        value: ethers.utils.parseEther(ethToUseForDeposit) //parses eth into wei
+      })
+      await transaction.wait()
+
+      let balance = await signer.getBalance()
+      balance = ethers.utils.formatEther(balance)
+      setBalance(balance)
+
+      let scBalance = await contract.balanceOf()
+      scBalance = ethers.utils.formatEther(scBalance)
+      setSCBalance(scBalance)
+
     } catch (err) {
       console.log("depositToEtherWalletContract() exited with error: ", err)
     }
@@ -128,7 +158,7 @@ function App() {
             <div className='mt-2 mb-2'>Connected Account: {account}</div>
             <div className='mt-2 mb-2'>MetaMask Balance: {balance}</div>
             <Form>
-              <Form.Group className="mb-3" controlId="numberInEth">
+              <Form.Group className="mb-3" controlId="numberInEthDeposit">
                 <Form.Control
                   type="text"
                   placeholder="Deposit Amount (ETH)"
@@ -137,6 +167,26 @@ function App() {
               <Button variant="primary" onClick={depositToEtherWalletContract}>
                 Deposit
               </Button>
+              </Form.Group>
+            </Form>
+            <Form>
+              <Form.Group className='mb-3' controlId='numberInEthWithdraw'>
+                <Form.Control
+                  type='text'
+                  placeholder='Withdrawal Amount (ETH)'
+                  onChange={(e) => setEthToUseForWithdrawal(e.target.value)}
+                />
+                <Form.Control
+                  type='text'
+                  placeholder='Enter Recipient ETH address'
+                  onChange={(e) => setAddressToUseForWithdrawal(e.target.value)}
+                />
+                <Button
+                  variant='primary'
+                  onClick={withdrawFromEtherWalletContract}
+                >
+                  Withdraw from EtherWallet Smart Contract
+                </Button>
               </Form.Group>
             </Form>
             <div className='mt-2 mb-2'>Smart Contract Address: {contractAddress}</div>
